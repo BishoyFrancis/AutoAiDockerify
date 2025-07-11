@@ -66,7 +66,22 @@ def dockerfile_validation(path="Dockerfile"):
         return False
     return build_result.returncode == 0, build_result.stderr.decode()
 
+def fix_prompt(model,broken_dockerfile):
+    print("🔁 Trying to fix the Dockerfile using the model...")
+    fix_prompt = f"""
+    You are a DevOps expert. The following Dockerfile is broken or incomplete.
+    Fix it and return only the corrected Dockerfile.
 
+    Broken Dockerfile:
+    {broken_dockerfile}
+
+    """
+    result = subprocess.run(
+    ['ollama', 'run', model],
+    input=fix_prompt.encode(),
+    stdout=subprocess.PIPE
+    )
+    return result.stdout.decode()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Auto-generate Dockerfile using local LLM")
@@ -86,5 +101,16 @@ if __name__ == "__main__":
         print("✅ Dockerfile built successfully!")
         logging.info("✅ Dockerfile built successfully!")
     else:
-        print("❌ Dockerfile build failed. Error:")
         logging.error(error)
+        choice = input("🔁 Do you want the model to try fixing it? (y/n): ").strip().lower()
+        if choice == 'y':
+            fixed_dockerfile = fix_prompt(args.model, dockerfile)
+            save_dockerfile(fixed_dockerfile, path=args.output)
+            valid, error = dockerfile_validation(args.output)
+            if valid:
+                print("✅ Fixed Dockerfile built successfully!")
+                logging.info("✅ Fixed Dockerfile built successfully!")
+            else:
+                print("❌ Still Failed , Here is the error:")
+                print(error)
+                logging.error("❌ Failed to fix the Dockerfile.")
