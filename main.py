@@ -41,11 +41,14 @@ def save_dockerfile(content, path="Dockerfile"):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Auto-generate Dockerfile using local LLM")
+    
     parser.add_argument('--path', required=True, help='Path to the project folder')
+    parser.add_argument('--model', default='phi3', help='Ollama model to use (default: phi3)')
+    parser.add_argument('--output', default='Dockerfile', help='Output Dockerfile name (default: Dockerfile)')
     args = parser.parse_args()
     directory = args.path.strip()
     # directory = input("📁 Enter path to your project directory (inside WSL): ").strip()
     context = scan_project(directory)
     print("🧠 Generating Dockerfile using Phi...")
-    dockerfile = generate_dockerfile(context)
-    save_dockerfile(dockerfile)
+    dockerfile = generate_dockerfile(context, model=args.model)
+    save_dockerfile(dockerfile, path=args.output)
