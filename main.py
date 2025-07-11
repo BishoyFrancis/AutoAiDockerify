@@ -1,5 +1,7 @@
 import subprocess
 from utils import scan_project
+import argparse
+import os
 
 def generate_dockerfile(context, model="phi3"):
     prompt = f"""
@@ -38,7 +40,11 @@ def save_dockerfile(content, path="Dockerfile"):
     print(f"✅ Dockerfile saved at: {path}")
 
 if __name__ == "__main__":
-    directory = input("📁 Enter path to your project directory (inside WSL): ").strip()
+    parser = argparse.ArgumentParser(description="Auto-generate Dockerfile using local LLM")
+    parser.add_argument('--path', required=True, help='Path to the project folder')
+    args = parser.parse_args()
+    directory = args.path.strip()
+    # directory = input("📁 Enter path to your project directory (inside WSL): ").strip()
     context = scan_project(directory)
     print("🧠 Generating Dockerfile using Phi...")
     dockerfile = generate_dockerfile(context)
