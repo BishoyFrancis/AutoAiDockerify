@@ -1,33 +1,20 @@
 import subprocess
-from utils import scan_project
+from utils import scan_project, detect_project_type
 import argparse
 import os
 import logging
 
-def generate_dockerfile(context, model="phi3"):
-    prompt = f"""
-You are a professional DevOps engineer.
-
-I will give you the contents of a small web application. Your task is to generate a working production-ready Dockerfile that can:
-
-- Install necessary dependencies
-- Expose the right port
-- Run the app correctly using CMD or ENTRYPOINT
-- do not add "```Dockerfile" at a start of the file or "```" at the end of the file
-- Ensure the app runs in a production environment
-- Use the best practices for Dockerfile creation
-- Use the provided context to understand the application structure and dependencies
-- install requirements.txt file if it exists
-
-Make sure to include pip install or npm install if needed.
-
-ONLY return the Dockerfile. No explanations.
-
-### Project code:
-{context}
-
-# Dockerfile:
-"""
+def generate_dockerfile(context, model="phi3" , lang="generic", framework=None):
+    # # build a custom preamble
+    intro = f"You are a DevOps engineer. You will generate a Dockerfile for a {lang} application"
+    if framework:
+        intro += f" using the {framework} framework."
+    intro += ".\nThe Dockerfile should be production-ready and follow best practices."
+    prompt = intro + """
+    Based on the following project files, generate a production-ready Dockerfile.
+Only return the Dockerfile, no extra text.
+""" + context + "\n #Dockerfile:\n"
+    
     result = subprocess.run(
         ['ollama', 'run', model],
         input=prompt.encode(),
@@ -92,9 +79,10 @@ if __name__ == "__main__":
     directory = args.path.strip()
     # directory = input("📁 Enter path to your project directory (inside WSL): ").strip()
     context = scan_project(directory)
+    lang, framework = detect_project_type(args.path)
     print("🧠 Generating Dockerfile using Phi...")
     logging.info("🧠 Generating Dockerfile using Phi...")
-    dockerfile = generate_dockerfile(context, model=args.model)
+    dockerfile = generate_dockerfile(context, model=args.model , lang=lang, framework=framework)
     save_dockerfile(dockerfile, path=args.output)
     valid, error = dockerfile_validation(args.output)
     if valid:
