@@ -12,3 +12,7 @@ jobs:
     steps:
         - name: Checkout Code
           uses: actions/checkout@v2
+        - name: See Repo Files
+          run: |
+            echo "Listing files in the repository:"
+            ls -la
