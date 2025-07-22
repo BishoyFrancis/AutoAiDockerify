@@ -16,3 +16,19 @@ jobs:
           run: |
             echo "Listing files in the repository:"
             ls -la
+  ollama:
+    runs-on: ubuntu-latest
+    steps:
+        - name: Run Ollama Model
+          uses: ai-action/ollama-action@v1
+          id: ollama
+          with:
+            model: phi3
+            prompt: |
+              What is a LLM?
+              Provide a brief description of its capabilities and applications.
+              
+        - name: Display Ollama Output
+          run: |
+            echo "Ollama Model Output:"
+            echo "${{ steps.ollama.outputs.response }}"
