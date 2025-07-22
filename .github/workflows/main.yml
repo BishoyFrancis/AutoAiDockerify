@@ -23,11 +23,11 @@ jobs:
           uses: ai-action/ollama-action@v1
           id: ollama
           with:
-            model: phi3
+            model: llama3
             prompt: |
               What is a LLM?
               Provide a brief description of its capabilities and applications.
-              
+
         - name: Display Ollama Output
           run: |
             echo "Ollama Model Output:"
